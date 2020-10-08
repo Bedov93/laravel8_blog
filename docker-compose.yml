@@ -1,0 +1,74 @@
+version: "3.1"
+
+services:
+  nginx:
+    image: tutum/nginx
+    ports:
+      - "80:80"
+    links:
+      - php-fpm
+      - db
+    volumes:
+      - ${HOST_APP_PATH}:${DOCKER_APP_PATH}
+      - ./docker/nginx/default:/etc/nginx/sites-available/default
+      - ./docker/nginx/default:/etc/nginx/sites-enabled/default
+
+      - ./docker/logs/nginx-access.log:/var/log/nginx/access.log
+      - ./docker/logs/nginx-error.log:/var/log/nginx/error.log
+
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - ${HOST_APP_PATH}:${DOCKER_APP_PATH}
+    working_dir: ${DOCKER_APP_PATH}
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DOCKER_PASSWORD}
+      - MYSQL_DATABASE=${DOCKER_DATABASE}
+      - MYSQL_USER=${DOCKER_USERNAME}
+      - MYSQL_PASSWORD=${DOCKER_PASSWORD}
+    restart: always
+    command: [
+      #"--general_log=1",
+      #"--general_log_file=/var/lib/mysql/general_log.log",
+      #"--character-set-server=utf8mb4",
+      #"--collation-server=utf8mb4_general_ci",
+      #"--default-storage-engine=innodb",
+      #"--innodb-file-per-table",
+      #"--explicit_defaults_for_timestamp=1",
+      #"--default-time-zone=+00:00",
+      #"--innodb-use-native-aio=0"
+    ]
+
+
+  composer:
+    image: composer:latest
+    volumes:
+      - ${HOST_APP_PATH}:${DOCKER_APP_PATH}
+    working_dir: ${DOCKER_APP_PATH}
+    command: composer install
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${DOCKER_USERNAME}
+      PMA_PASSWORD: ${DOCKER_PASSWORD}
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8080:80

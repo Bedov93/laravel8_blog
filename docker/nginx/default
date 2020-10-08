@@ -1,0 +1,27 @@
+server {
+    listen 80 default;
+
+    root /application/public/public;
+    index index.php;
+
+	location / {
+		try_files $uri $uri/ =404 /index.php$is_args$args;
+	}
+
+	location ~* \.(js|jpg|png|css)$ {
+      	try_files $uri $uri/ /pages$uri /theme$uri =404;
+    }
+
+	location ~ \.php$ {
+		try_files $uri =404; # php-fpm vulnerability
+		fastcgi_pass php-fpm:9000;
+		fastcgi_index index.php;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		fastcgi_param PHP_VALUE "error_log=/var/log/nginx/application_php_errors.log";
+		fastcgi_buffers 16 16k;
+		fastcgi_buffer_size 32k;
+		include fastcgi_params;
+	}
+
+ 	client_max_body_size 2M;
+}

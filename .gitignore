@@ -1,0 +1,12 @@
+.idea/
+.c9/
+vendor/
+database/
+!public/*/database
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+config.php
