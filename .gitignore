@@ -2,7 +2,6 @@
 .c9/
 vendor/
 database/
-!public/*/database
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
